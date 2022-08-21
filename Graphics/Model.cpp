@@ -26,13 +26,13 @@ bool Model::Initialize(const std::string& filepath, ID3D11Device* device, ID3D11
 
 void Model::Draw(const Matrix& worldMatrix, const Matrix& viewProjectionMatrix)
 {
-	this->context->VSSetConstantBuffers(0, 1, cb_vs_vertexshader.GetAddressOf());
+	this->context->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader.GetAddressOf());
 
-	for (UINT i = 0; i < meshes.size(); i++) {
-		this->cb_vs_vertexshader.data.wvpMatrix = meshes[i].GetTransform() * worldMatrix * viewProjectionMatrix;
-		this->cb_vs_vertexshader.data.worldMatrix = meshes[i].GetTransform() * worldMatrix;
+	for (UINT i = 0; i < this->meshes.size(); i++) {
+		this->cb_vs_vertexshader.data.wvpMatrix = this->meshes[i].GetTransform() * worldMatrix * viewProjectionMatrix;
+		this->cb_vs_vertexshader.data.worldMatrix = this->meshes[i].GetTransform() * worldMatrix;
 		this->cb_vs_vertexshader.ApplyChanges();
-		meshes[i].Draw();
+		this->meshes[i].Draw();
 	}
 }
 

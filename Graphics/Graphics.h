@@ -12,7 +12,7 @@
 #include "ImGui\\imgui_impl_dx11.h"
 #include "RenderableGameObject.h"
 #include "Light.h"
-#include "DepthPass.h"
+#include "GeometryPass.h"
 #include "LightingPass.h"
 
 class Graphics
@@ -32,23 +32,18 @@ private:
 	bool InitializeDirectX(HWND hwnd);
 	bool InitializeRenderPasses();
 	bool InitializeScene();
+	void CreateViewport();
 
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 
 	PixelShader pShader_nolight;
 	
 	ConstantBuffer<CB_PS_light> cb_ps_light;
 
-	DepthPass depthPass;
+	GeometryPass geometryPass;
 	LightingPass lightingPass;
-
-	std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
-	std::unique_ptr<DirectX::SpriteFont> spriteFont;
-
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	int windowWidth = 0;
 	int windowHeight = 0;
