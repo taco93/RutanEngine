@@ -3,15 +3,15 @@
 void LightingPass::PreRender()
 {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	this->context->ClearRenderTargetView(this->renderTarget, clearColor);
-	this->context->OMSetRenderTargets(1, &this->renderTarget, 0);
+	this->context->ClearRenderTargetView(this->rtv.Get(), clearColor);
+	this->context->OMSetRenderTargets(1, this->rtv.GetAddressOf(), 0);
 
 	this->context->VSSetShader(this->vShader.GetShader(), 0, 0);
 	this->context->PSSetShader(this->pShader.GetShader(), 0, 0);
 
 	this->context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	this->context->PSSetShaderResources(0, 3, this->shaderResources);
-	this->context->OMSetDepthStencilState(this->depthStencilState.Get(), 0);
+	this->gBuffer->BindForReading();
+	this->context->OMSetDepthStencilState(0, 0);
 }
 
 void LightingPass::Draw()
@@ -24,28 +24,22 @@ void LightingPass::PostRender()
 	this->context->PSSetShaderResources(0, 0, 0);
 }
 
-bool LightingPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* renderTarget, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>* shaderResources)
+bool LightingPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, IDXGISwapChain* swapchain, GBuffer* gBuffer)
 {
-    this->context = context;
-	this->renderTarget = renderTarget;
+	this->context = context;
+	this->gBuffer = gBuffer;
 
-	for (int i = 0; i < 3; i++) {
-		this->shaderResources[i] = shaderResources[i].Get();
-	}
+	try {
+		ID3D11Texture2D* pBuffer;
+		HRESULT hr = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBuffer);
 
- 	if (!this->vShader.Initialize(device, GetShaderFolder() + L"vertexshader.cso", nullptr, 0))
-		return false;
-	if (!this->pShader.Initialize(device, GetShaderFolder() + L"pixelshader.cso"))
-		return false;
+		COM_ERROR_IF_FAILED(hr, "Failed to get backbuffer");
 
-	D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc = {};
-	depthStencilStateDesc.DepthEnable = false;
+		hr = device->CreateRenderTargetView(pBuffer, NULL, rtv.GetAddressOf());
 
-	try 
-	{
-		HRESULT hr = device->CreateDepthStencilState(&depthStencilStateDesc, this->depthStencilState.GetAddressOf());
+		COM_ERROR_IF_FAILED(hr, "Failed to create RenderTargetView.");
 
-		COM_ERROR_IF_FAILED(hr, "Failed to create depth stencil state.");
+		pBuffer->Release();
 	}
 	catch (COMException& exception)
 	{
@@ -53,5 +47,33 @@ bool LightingPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context
 		return false;
 	}
 
-    return true;
+	if (!this->vShader.Initialize(device, GetShaderFolder() + L"vertexshader.cso", nullptr, 0))
+		return false;
+	if (!this->pShader.Initialize(device, GetShaderFolder() + L"pixelshader.cso"))
+		return false;
+
+	return true;
+}
+
+bool LightingPass::Resize(ID3D11Device* device, ID3D11Texture2D* backbuffer, const int& width, const int& height)
+{	
+	try {
+		HRESULT hr = device->CreateRenderTargetView(backbuffer, NULL, this->rtv.GetAddressOf());
+
+		COM_ERROR_IF_FAILED(hr, "Failed to create Render target view.");
+
+		backbuffer->Release();
+	}
+	catch (COMException& exception)
+	{
+		Logger::Log(exception);
+		return false;
+	}
+
+	return true;
+}
+
+void LightingPass::ReleaseRenderTarget()
+{
+	this->rtv->Release();
 }

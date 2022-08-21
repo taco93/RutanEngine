@@ -77,29 +77,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 		COM_ERROR_IF_FAILED(hr, "Failed to create device and swapchain.");
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> backbuffer;
-		hr = this->swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backbuffer.GetAddressOf()));
-
-		COM_ERROR_IF_FAILED(hr, "Failed to get backbuffer from swapchain.");
-
-		hr = this->device->CreateRenderTargetView(backbuffer.Get(), NULL, renderTargetView.GetAddressOf());
-
-		COM_ERROR_IF_FAILED(hr, "Failed to create RenderTargetView.");
-
-		D3D11_VIEWPORT viewport = {};
-
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		viewport.Width = static_cast<FLOAT>(this->windowWidth);
-		viewport.Height = static_cast<FLOAT>(this->windowHeight);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-
-		// Set the viewport
-		this->context->RSSetViewports(1, &viewport);
-
-		spriteBatch = std::make_unique<DirectX::SpriteBatch>(this->context.Get());
-		spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Assets\\Fonts\\times_new_roman_16.spritefont");
+		this->CreateViewport();
 	}
 	catch (COMException& exception) {
 		Logger::Log(exception);
@@ -111,10 +89,10 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 bool Graphics::InitializeRenderPasses()
 {
-	if (!depthPass.Initialize(device.Get(), context.Get(), this->windowWidth, this->windowHeight))
+	if (!geometryPass.Initialize(device.Get(), context.Get(), this->windowWidth, this->windowHeight))
 		return false;
 
-	if (!lightingPass.Initialize(device.Get(), context.Get(), renderTargetView.Get(), depthPass.GetShaderResources()))
+	if (!lightingPass.Initialize(device.Get(), context.Get(), this->swapchain.Get(), this->geometryPass.GetGBufferPtr()))
 		return false;
 
 	if (!pShader_nolight.Initialize(this->device.Get(), L"x64\\Debug\\pixelshader_nolight.cso"))
@@ -152,13 +130,25 @@ bool Graphics::InitializeScene()
 	return true;
 }
 
+void Graphics::CreateViewport()
+{
+	D3D11_VIEWPORT vp;
+	vp.Width = static_cast<FLOAT>(this->windowWidth);
+	vp.Height = static_cast<FLOAT>(this->windowHeight);
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	this->context->RSSetViewports(1, &vp);
+}
+
 void Graphics::Render()
 {
-	this->depthPass.PreRender();
+	this->geometryPass.PreRender();
 	this->gameObject.Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
 	this->context->PSSetShader(this->pShader_nolight.GetShader(), NULL, 0);
 	this->light.Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
-	this->depthPass.PostRender();
+	this->geometryPass.PostRender();
 
 	this->cb_ps_light.data.lightColor = light.lightColor;
 	this->cb_ps_light.data.lightStrength = light.lightStrength;
@@ -173,19 +163,6 @@ void Graphics::Render()
 	this->lightingPass.Draw();
 	this->lightingPass.PostRender();
 
-	static int fpsCounter = 0;
-	static std::string fpsString = "FPS: 0";
-	fpsCounter += 1;
-	if (fpsTimer.GetElapsedTime() > 1000.0) {
-		fpsString = "FPS: " + std::to_string(fpsCounter);
-		fpsCounter = 0;
-		fpsTimer.Restart();
-	}
-
-	//spriteBatch->Begin();
-	//spriteFont->DrawString(spriteBatch.get(), StringHelper::StringToWide(fpsString).c_str(), XMFLOAT2(0, 0), DirectX::Colors::White, 0.0f, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f));
-	//spriteBatch->End();
-
 	// ImGui Frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -198,6 +175,8 @@ void Graphics::Render()
 	ImGui::DragFloat("Attenuation B", &this->light.attenuationB, 0.001f, 0.0f, 10.0f);
 	ImGui::DragFloat("Attenuation C", &this->light.attenuationC, 0.001f, 0.0f, 10.0f);
 	ImGui::End();
+	ImGui::Begin("Frame information");
+	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -208,11 +187,13 @@ void Graphics::OnResize(UINT width, UINT height)
 {
 	if (this->swapchain.Get()) {
 		this->context->OMSetRenderTargets(0, 0, 0);
-		this->renderTargetView->Release();
+		this->windowWidth = width;
+		this->windowHeight = height;
 
 		try {
-			this->windowWidth = width;
-			this->windowHeight = height;
+			this->geometryPass.ReleaseBuffers();
+			this->lightingPass.ReleaseRenderTarget();
+
 			HRESULT hr = this->swapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
 			COM_ERROR_IF_FAILED(hr, "Failed to Resize buffers.");
@@ -222,20 +203,10 @@ void Graphics::OnResize(UINT width, UINT height)
 
 			COM_ERROR_IF_FAILED(hr, "Failed to get backbuffer");
 
-			hr = this->device->CreateRenderTargetView(pBuffer, NULL, this->renderTargetView.GetAddressOf());
+			this->lightingPass.Resize(this->device.Get(), pBuffer, width, height);
+			this->geometryPass.Resize(this->device.Get(), width, height);
 
-			COM_ERROR_IF_FAILED(hr, "Failed to create Render target view.");
-
-			pBuffer->Release();
-
-			D3D11_VIEWPORT vp;
-			vp.Width = width;
-			vp.Height = height;
-			vp.MinDepth = 0.0f;
-			vp.MaxDepth = 1.0f;
-			vp.TopLeftX = 0;
-			vp.TopLeftY = 0;
-			this->context->RSSetViewports(1, &vp);
+			this->CreateViewport();
 		}
 		catch (COMException& exception)
 		{

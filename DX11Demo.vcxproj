@@ -152,12 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application\App.cpp" />
-    <ClCompile Include="Graphics\DepthPass.cpp" />
+    <ClCompile Include="Graphics\GeometryPass.cpp" />
     <ClCompile Include="Graphics\Color.cpp" />
     <ClCompile Include="Graphics\GameObject.cpp" />
     <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\AdapterReader.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Graphics\GBuffer.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\ImGui\imgui.cpp" />
     <ClCompile Include="Graphics\ImGui\imgui_draw.cpp" />
@@ -187,7 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application\App.h" />
-    <ClInclude Include="Graphics\DepthPass.h" />
+    <ClInclude Include="Graphics\GeometryPass.h" />
     <ClInclude Include="Graphics\Color.h" />
     <ClInclude Include="COMException.h" />
     <ClInclude Include="Graphics\GameObject.h" />
