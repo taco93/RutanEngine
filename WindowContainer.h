@@ -8,6 +8,7 @@
 class WindowContainer
 {
 private:
+	void OnResize(const int& width, const int& height);
 
 protected:
 	Window render_window;

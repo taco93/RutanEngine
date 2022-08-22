@@ -4,6 +4,7 @@
 #pragma comment(lib, "DirectXTex.lib")
 #include <DirectXTex.h>
 #include "..\\Logger.h"
+#include "..\\ResourceManager.h"
 
 Texture::Texture(ID3D11Device* device, const MyEngine::Color& color, aiTextureType type)
 {
@@ -51,9 +52,13 @@ Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, const std::
 			COM_ERROR_IF_FAILED(hr, "Failed to Create TGA Shader Resource.");
 		}
 		catch (COMException& exception) {
+			Logger::Log(exception);
+
 			this->Initialize1x1ColorTexture(device, MyEngine::Colors::UnloadedTextureColor, type);
 			return;
 		}
+
+		ResourceManager::AddResource(filepath, *this);
 
 		return;
 	}

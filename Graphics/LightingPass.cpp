@@ -10,7 +10,7 @@ void LightingPass::PreRender()
 	this->context->PSSetShader(this->pShader.GetShader(), 0, 0);
 
 	this->context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	this->gBuffer->BindForReading();
+	this->gBuffer->BindRead();
 	this->context->OMSetDepthStencilState(0, 0);
 }
 
@@ -21,7 +21,7 @@ void LightingPass::Draw()
 
 void LightingPass::PostRender()
 {
-	this->context->PSSetShaderResources(0, 0, 0);
+	this->gBuffer->UnbindRead();
 }
 
 bool LightingPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, IDXGISwapChain* swapchain, GBuffer* gBuffer)

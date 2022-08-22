@@ -5,6 +5,7 @@
 #include <string>
 #include <assimp/material.h>
 #include "..\COMException.h"
+#include "..\GResource.h"
 
 enum class TextureStorageType
 {
@@ -17,7 +18,7 @@ enum class TextureStorageType
 	Disk
 };
 
-class Texture
+class Texture : public resource::GResource
 {
 public:
 	Texture(ID3D11Device* device, const MyEngine::Color& color, aiTextureType type);
@@ -34,4 +35,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Resource> texture = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView = nullptr;
 	aiTextureType type = aiTextureType::aiTextureType_UNKNOWN;
+
 };

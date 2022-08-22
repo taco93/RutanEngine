@@ -186,10 +186,10 @@ LRESULT WindowContainer::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_WINDOWPOSCHANGED:
 	{
 		WINDOWPOS* wp = reinterpret_cast<WINDOWPOS*>(lParam);
-		if (this->render_window.GetWidth() != wp->cx || this->render_window.GetHeight() != wp->cy)
+		if (this->render_window.width != wp->cx || this->render_window.height != wp->cy)
 		{
-			this->render_window.SetWidth(wp->cx);
-			this->render_window.SetHeight(wp->cy);
+			this->render_window.width = wp->cx;
+			this->render_window.height = wp->cy;
 			gfx.OnResize(wp->cx, wp->cy);
 		}
 		return 0;
