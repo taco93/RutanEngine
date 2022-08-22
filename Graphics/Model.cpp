@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "..\\ResourceManager.h"
 
 bool Model::Initialize(const std::string& filepath, ID3D11Device* device, ID3D11DeviceContext* context)
 {
@@ -155,6 +156,11 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
 		case TextureStorageType::Disk:
 		{
 			std::string filename = this->directory + '\\' + path.C_Str();
+			Texture* tex = ResourceManager::GetResource<Texture>(filename);
+			if (tex) {
+				materialTextures.push_back(*tex);
+				break;
+			}
 			Texture diskTexture(this->device, this->context, filename, textureType);
 			materialTextures.push_back(diskTexture);
 			break;

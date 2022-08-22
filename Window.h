@@ -15,20 +15,16 @@ private:
 	std::wstring titleW = L"";
 	std::string windowClass = "";
 	std::wstring windowClassW = L"";
-	uint16_t width = 0;
-	uint16_t height = 0;
 
 public:
 	~Window();
 
+	uint16_t width = 0;
+	uint16_t height = 0;
 	bool Initialize(WindowContainer* pWindowContainer, HINSTANCE hInstance, uint16_t width = 800, uint16_t height = 600, 
 		std::string title = "Temp Title", std::string class_ = "Temp Class");
 	bool ProcessMessages();
 	HWND GetHwnd()const;
-	uint16_t GetWidth()const;
-	uint16_t GetHeight()const;
-	void SetWidth(const uint16_t& width);
-	void SetHeight(const uint16_t& height);
 	void ConfineCursor() const;
 	void FreeCursor() const;
 };

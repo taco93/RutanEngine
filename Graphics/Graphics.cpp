@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "..\\ResourceManager.h"
 
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
@@ -29,6 +30,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 Graphics::~Graphics()
 {
 	this->swapchain->SetFullscreenState(FALSE, nullptr);
+	ResourceManager::Destroy();
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)
@@ -175,7 +177,10 @@ void Graphics::Render()
 	ImGui::DragFloat("Attenuation B", &this->light.attenuationB, 0.001f, 0.0f, 10.0f);
 	ImGui::DragFloat("Attenuation C", &this->light.attenuationC, 0.001f, 0.0f, 10.0f);
 	ImGui::End();
-	ImGui::Begin("Frame information");
+	ImGui::Begin("Deferred images");
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[0], { 250, 150 });
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[1], { 250, 150 });
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[2], { 250, 150 });
 	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

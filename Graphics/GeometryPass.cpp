@@ -15,7 +15,7 @@ void GeometryPass::PreRender()
 	this->context->PSSetShader(pShader.GetShader(), NULL, 0);
 
 	this->gBuffer.Clear();
-	this->gBuffer.BindForWriting(this->depthStencilView.Get());
+	this->gBuffer.BindWrite(this->depthStencilView.Get());
 }
 
 void GeometryPass::Draw()
@@ -25,6 +25,7 @@ void GeometryPass::Draw()
 void GeometryPass::PostRender()
 {
 	this->context->IASetInputLayout(0);
+	this->gBuffer.UnbindWrite();
 }
 
 bool GeometryPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, const int& width, const int& height)

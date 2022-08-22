@@ -1,20 +1,32 @@
 #include "GBuffer.h"
 #include "../Logger.h"
 
-void GBuffer::BindForWriting(ID3D11DepthStencilView* dsv)
+void GBuffer::BindWrite(ID3D11DepthStencilView* dsv)
 {
 	this->context->OMSetRenderTargets(GBUFFER_SIZE, this->rtv->GetAddressOf(), dsv);
 }
 
-void GBuffer::BindForReading()
+void GBuffer::UnbindWrite()
+{
+	ID3D11RenderTargetView* rtvs[GBUFFER_SIZE] = { nullptr };
+	this->context->OMSetRenderTargets(GBUFFER_SIZE, rtvs, nullptr);
+}
+
+void GBuffer::BindRead()
 {
 	this->context->PSSetShaderResources(0, GBUFFER_SIZE, this->srv->GetAddressOf());
+}
+
+void GBuffer::UnbindRead()
+{
+	ID3D11ShaderResourceView* srvs[GBUFFER_SIZE] ={ nullptr };
+	this->context->PSSetShaderResources(0, GBUFFER_SIZE, srvs);
 }
 
 void GBuffer::Clear()
 {
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	
+
 	for (int i = 0; i < GBUFFER_SIZE; i++) {
 		this->context->ClearRenderTargetView(this->rtv[i].Get(), clearColor);
 	}
@@ -84,4 +96,9 @@ bool GBuffer::Create(ID3D11Device* device, const int& width, const int& height)
 	}
 
 	return true;
+}
+
+ID3D11ShaderResourceView** GBuffer::GetImages()
+{
+	return this->srv->GetAddressOf();
 }

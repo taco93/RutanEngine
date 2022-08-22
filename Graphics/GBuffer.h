@@ -8,17 +8,20 @@ class GBuffer
 {
 public:
 	// Binds the rendertargets for writing
-	void BindForWriting(ID3D11DepthStencilView* dsv);
+	void BindWrite(ID3D11DepthStencilView* dsv);
+	void UnbindWrite();
 	/*
 		Binds the shader resources for reading
 		its important to note that the shaders 
 		has to be set before calling this function.
 	*/
-	void BindForReading();
+	void BindRead();
+	void UnbindRead();
 	void Clear();
 	void Release();
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, const int& width, const int& height);
 	bool Create(ID3D11Device* device, const int& width, const int& height);
+	ID3D11ShaderResourceView** GetImages();
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv[GBUFFER_SIZE];

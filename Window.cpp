@@ -154,26 +154,6 @@ HWND Window::GetHwnd() const
 	return hwnd;
 }
 
-uint16_t Window::GetWidth() const
-{
-	return width;
-}
-
-uint16_t Window::GetHeight() const
-{
-	return height;
-}
-
-void Window::SetWidth(const uint16_t& width)
-{
-	this->width = width;
-}
-
-void Window::SetHeight(const uint16_t& height)
-{
-	this->height = height;
-}
-
 void Window::ConfineCursor() const
 {
 	RECT rect;
