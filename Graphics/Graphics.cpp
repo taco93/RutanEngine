@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "..\\ResourceManager.h"
+#include "LightManager.h"
 
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
@@ -11,6 +12,9 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 		return false;
 
 	if (!InitializeRenderPasses())
+		return false;
+
+	if (!LightManager::Initialize(device.Get(), context.Get()))
 		return false;
 
 	if (!InitializeScene())
@@ -97,37 +101,21 @@ bool Graphics::InitializeRenderPasses()
 	if (!lightingPass.Initialize(device.Get(), context.Get(), this->swapchain.Get(), this->geometryPass.GetGBufferPtr()))
 		return false;
 
-	if (!pShader_nolight.Initialize(this->device.Get(), L"x64\\Debug\\pixelshader_nolight.cso"))
-		return false;
-
 	return true;
 }
 
 bool Graphics::InitializeScene()
 {
-	try {
-		HRESULT hr = this->cb_ps_light.Initialize(this->device.Get(), this->context.Get());
-
-		COM_ERROR_IF_FAILED(hr, "Failed to initialize constant buffer.");
-
-		this->cb_ps_light.data.ambientColor = XMFLOAT3(1.0f, 1.0f, 1.0f);
-		this->cb_ps_light.data.ambientStrength = 1.0f;
-
-		// Initialize model(s)
-		if (!gameObject.Initialize("Assets\\Objects\\Sponza\\sponza_nobanner.obj", this->device.Get(), this->context.Get()))
-			return false;
-
-		if (!light.Initialize(this->device.Get(), this->context.Get()))
-			return false;
-
-		camera.SetPosition(0.0f, 0.0f, -2.0f);
-		camera.SetProjection(90.0f, static_cast<float>(this->windowWidth) / static_cast<float>(this->windowHeight), 0.1f, 3000.0f);
-
-	}
-	catch (COMException& exception) {
-		Logger::Log(exception);
+	// Initialize model(s)
+	if (!gameObject.Initialize("Assets\\Objects\\Sponza\\sponza_nobanner.obj", this->device.Get(), this->context.Get()))
 		return false;
-	}
+
+	LightManager::AddPointLight(Vector3(30.f, 30.f, 0.f), Vector3(1.0f, 1.0f, 1.0f));
+	LightManager::AddPointLight(Vector3(200.f, 65.f, 0.f), Vector3(1.0f, 0.0f, 0.0f));
+	LightManager::AddPointLight(Vector3(30.f, 65.f, 0.f), Vector3(0.0f, 1.0f, 0.0f));
+
+	camera.SetPosition(0.0f, 50.0f, -50.0f);
+	camera.SetProjection(90.0f, static_cast<float>(this->windowWidth) / static_cast<float>(this->windowHeight), 0.1f, 3000.0f);
 
 	return true;
 }
@@ -148,20 +136,11 @@ void Graphics::Render()
 {
 	this->geometryPass.PreRender();
 	this->gameObject.Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
-	this->context->PSSetShader(this->pShader_nolight.GetShader(), NULL, 0);
-	this->light.Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
 	this->geometryPass.PostRender();
 
-	this->cb_ps_light.data.lightColor = light.lightColor;
-	this->cb_ps_light.data.lightStrength = light.lightStrength;
-	this->cb_ps_light.data.lightPos = light.GetPosition();
-	this->cb_ps_light.data.attenuationA = light.attenuationA;
-	this->cb_ps_light.data.attenuationB = light.attenuationB;
-	this->cb_ps_light.data.attenuationC = light.attenuationC;
-	this->cb_ps_light.ApplyChanges();
-	this->context->PSSetConstantBuffers(0, 1, this->cb_ps_light.GetAddressOf());
-
 	this->lightingPass.PreRender();
+	this->lightingPass.UpdateCameraParams(this->camera.GetPosition());
+	LightManager::Update();
 	this->lightingPass.Draw();
 	this->lightingPass.PostRender();
 
@@ -170,18 +149,21 @@ void Graphics::Render()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	ImGui::Begin("Light Controls");
-	ImGui::DragFloat3("Ambient light color", &this->cb_ps_light.data.ambientColor.x, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("Ambient strength", &this->cb_ps_light.data.ambientStrength, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("Light strength", &this->light.lightStrength, 0.01f, 0.0f, 10.0f);
-	ImGui::DragFloat("Attenuation A", &this->light.attenuationA, 0.01f, 0.1f, 10.0f);
-	ImGui::DragFloat("Attenuation B", &this->light.attenuationB, 0.001f, 0.0f, 10.0f);
-	ImGui::DragFloat("Attenuation C", &this->light.attenuationC, 0.001f, 0.0f, 10.0f);
+	ImGui::DragFloat3("Ambient light color", &LightManager::GetLight(0)->ambientColor.x, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Position", &LightManager::GetLight(0)->position.x, 0.0f, 0.0f, 10000.f);
+	ImGui::DragFloat("Ambient strength", &LightManager::GetLight(0)->ambientStrength, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("Light strength", &LightManager::GetLight(0)->lightStrength, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Attenuation A", &LightManager::GetLight(0)->attenuationA, 0.01f, 0.1f, 10.0f);
+	ImGui::DragFloat("Attenuation B", &LightManager::GetLight(0)->attenuationB, 0.001f, 0.0f, 10.0f);
+	ImGui::DragFloat("Attenuation C", &LightManager::GetLight(0)->attenuationC, 0.001f, 0.0f, 10.0f);
+	ImGui::DragFloat("Spotangle", &LightManager::GetLight(0)->spotAngle, 0.001f, 0.0f, 10.0f);
 	ImGui::End();
-	ImGui::Begin("Deferred images");
-	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[0], { 250, 150 });
-	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[1], { 250, 150 });
-	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[2], { 250, 150 });
+	ImGui::Begin("G-buffer");
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[0], { 300, 200 });
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[1], { 300, 200 });
+	ImGui::Image(this->geometryPass.GetGBufferPtr()->GetImages()[2], { 300, 200 });
 	ImGui::End();
+	ImGui::ShowMetricsWindow();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 

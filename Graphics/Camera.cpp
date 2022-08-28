@@ -29,7 +29,7 @@ const Matrix& Camera::GetProjectionMatrix() const
 
 void Camera::UpdateMatrix()
 {
-	// Confines the camera so it cannot roll over the X-axis 
+	// Clamps the camera so it cannot roll over the X-axis 
 	this->rotVec.x = clamp(this->rotVec.x, -XM_PIDIV2, XM_PIDIV2);
 
 	// Stay withing the bounds of floating point values to not exceed it's maximum.
@@ -41,15 +41,10 @@ void Camera::UpdateMatrix()
 
 	this->rotation = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, this->rotVec.x, this->rotVec.z);
 
-	Matrix rotationMatrix = Matrix::CreateFromQuaternion(this->rotation);
+	Vector3 camTarget = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, this->rotation);
+	Vector3 upDir = Vector3::Transform(this->DEFAULT_UP_VECTOR, this->rotation);
 
-	Vector3 camTarget = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, rotationMatrix);
-
-	camTarget += this->pos;
-
-	Vector3 upDir = Vector3::Transform(this->DEFAULT_UP_VECTOR, rotationMatrix);
-
-	this->viewMatrix = XMMatrixLookAtLH(this->pos, camTarget, upDir);
+	this->viewMatrix = XMMatrixLookToLH(this->pos, camTarget, upDir);
 
 	this->UpdateDirectionVectors();
 }

@@ -166,10 +166,10 @@
     <ClCompile Include="Graphics\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="Graphics\ImGui\imgui_tables.cpp" />
     <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Graphics\LightManager.cpp" />
     <ClCompile Include="Graphics\RenderPass.cpp" />
     <ClCompile Include="Keyboard\Keyboard.cpp" />
     <ClCompile Include="Keyboard\KeyboardEvent.cpp" />
-    <ClCompile Include="Graphics\Light.cpp" />
     <ClCompile Include="Graphics\LightingPass.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
@@ -212,6 +212,7 @@
     <ClInclude Include="Keyboard\KeyboardEvent.h" />
     <ClInclude Include="Graphics\Light.h" />
     <ClInclude Include="Graphics\LightingPass.h" />
+    <ClInclude Include="Graphics\LightManager.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Graphics\Mesh.h" />
     <ClInclude Include="MessageBus.h" />
@@ -228,6 +229,7 @@
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Graphics\VertexBuffer.h" />
     <ClInclude Include="Graphics\Texture.h" />
+    <ClInclude Include="Graphics\StructuredBuffer.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Window.h" />

@@ -120,24 +120,24 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const Matrix& transf
 	std::vector<Texture> alphaTextures = LoadMaterialTextures(material, aiTextureType_OPACITY, scene);
 	textures.insert(textures.end(), alphaTextures.begin(), alphaTextures.end());
 
-	CB_PS_toggles maps;
+	CB_PS_materials materials;
 
 	if (diffuseTextures.size() > 0)
 	{
-		maps.hasAlbedoMap = true;
+		materials.hasAlbedoMap = true;
 	}
 
 	if (normalTextures.size() > 0)
 	{
-		maps.hasNormalMap = true;
+		materials.hasNormalMap = true;
 	}
 
 	if (alphaTextures.size() > 0)
 	{
-		maps.hasAlphaMap = true;
+		materials.hasAlphaMap = true;
 	}
 
-	return Mesh(this->device, this->context, vertices, indices, textures, transform, maps);
+	return Mesh(this->device, this->context, vertices, indices, textures, transform, materials);
 }
 
 std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene)
@@ -156,7 +156,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
 		case TextureStorageType::Disk:
 		{
 			std::string filename = this->directory + '\\' + path.C_Str();
-			Texture* tex = ResourceManager::GetResource<Texture>(filename);
+			Texture* tex = ResourceManager::GetResource<Texture>(StringHelper::GetFileName(filename));
 			if (tex) {
 				materialTextures.push_back(*tex);
 				break;

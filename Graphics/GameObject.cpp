@@ -64,28 +64,24 @@ void GameObject::AdjustPosition(float x, float y, float z)
 void GameObject::SetRotation(const Vector3& rot)
 {
 	this->rotVec = rot;
-	this->rotation = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, this->rotVec.x, this->rotVec.z);
 	this->UpdateMatrix();
 }
 
 void GameObject::SetRotation(float x, float y, float z)
 {
 	this->rotVec = Vector3(x, y, z);
-	this->rotation = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, this->rotVec.x, this->rotVec.z);
 	this->UpdateMatrix();
 }
 
 void GameObject::SetRotation(const Quaternion& rot)
 {
 	this->rotVec = rot.ToEuler();
-	this->rotation = rot;
 	this->UpdateMatrix();
 }
 
 void GameObject::AdjustRotation(const Vector3& rot)
 {
 	this->rotVec += rot;
-	this->rotation = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, this->rotVec.x, this->rotVec.z);
 	this->UpdateMatrix();
 }
 
@@ -94,13 +90,11 @@ void GameObject::AdjustRotation(float x, float y, float z)
 	this->rotVec.x += x;
 	this->rotVec.y += y;
 	this->rotVec.z += z;
-	this->rotation = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, this->rotVec.x, this->rotVec.z);
 	this->UpdateMatrix();
 }
 
 void GameObject::AdjustRotation(const Quaternion& rot)
 {
-	this->rotation += rot;
 	this->rotVec += rot.ToEuler();
 	this->UpdateMatrix();
 }
@@ -153,11 +147,10 @@ void GameObject::UpdateMatrix()
 
 void GameObject::UpdateDirectionVectors()
 {
-	Matrix rotationMatrix = Matrix::CreateFromQuaternion(this->rotation);
-	this->forward = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, rotationMatrix);
-	this->right = Vector3::Transform(this->DEFAULT_RIGHT_VECTOR, rotationMatrix);
+	this->forward = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, this->rotation);
+	this->right = Vector3::Transform(this->DEFAULT_RIGHT_VECTOR, this->rotation);
 
-	Matrix rotationMatrixNoY = Matrix::CreateFromYawPitchRoll(this->rotVec.y, 0.0f, 0.0f);
-	this->forward_noY = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, rotationMatrixNoY);
-	this->right_noY = Vector3::Transform(this->DEFAULT_RIGHT_VECTOR, rotationMatrixNoY);
+	Quaternion rotationNoY = Quaternion::CreateFromYawPitchRoll(this->rotVec.y, 0.0f, 0.0f);
+	this->forward_noY = Vector3::Transform(this->DEFAULT_FORWARD_VECTOR, rotationNoY);
+	this->right_noY = Vector3::Transform(this->DEFAULT_RIGHT_VECTOR, rotationNoY);
 }

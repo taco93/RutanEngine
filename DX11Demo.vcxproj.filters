@@ -123,9 +123,6 @@
     <ClCompile Include="Graphics\RenderableGameObject.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\Light.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Application\App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -139,6 +136,9 @@
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\GBuffer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\LightManager.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -277,6 +277,12 @@
     </ClInclude>
     <ClInclude Include="GResource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\LightManager.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\StructuredBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

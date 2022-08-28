@@ -11,7 +11,7 @@
 class Mesh
 {
 public:
-	Mesh(ID3D11Device* device, ID3D11DeviceContext* context, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, const Matrix& transform, CB_PS_toggles maps);
+	Mesh(ID3D11Device* device, ID3D11DeviceContext* context, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures, const Matrix& transform, CB_PS_materials maps);
 	Mesh(const Mesh& mesh);
 	void Draw();
 	const Matrix& GetTransform();
@@ -22,6 +22,5 @@ private:
 	ID3D11DeviceContext* context = nullptr;
 	std::vector<Texture> textures;
 	Matrix transform;
-	ConstantBuffer<CB_PS_toggles> cb_ps_toggles;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> textureUAV;
+	ConstantBuffer<CB_PS_materials> cb_ps_materials;
 };

@@ -40,6 +40,8 @@ bool LightingPass::Initialize(ID3D11Device* device, ID3D11DeviceContext* context
 		COM_ERROR_IF_FAILED(hr, "Failed to create RenderTargetView.");
 
 		pBuffer->Release();
+
+		this->cBuffer.Initialize(device, context);
 	}
 	catch (COMException& exception)
 	{
@@ -76,4 +78,10 @@ bool LightingPass::Resize(ID3D11Device* device, ID3D11Texture2D* backbuffer, con
 void LightingPass::ReleaseRenderTarget()
 {
 	this->rtv->Release();
+}
+
+void LightingPass::UpdateCameraParams(Vector3 eyePos)
+{
+	this->cBuffer.data.eyePos = eyePos;
+	this->cBuffer.ApplyChanges();
 }

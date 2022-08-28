@@ -3,17 +3,22 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 #include "..\\Logger.h"
+#include "..\\COMException.h"
 
 template <class T>
 class ConstantBuffer {
-private:
-	ConstantBuffer(const ConstantBuffer<T>& rhs);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
 	ID3D11DeviceContext* context = nullptr;
 
 public:
+	ConstantBuffer<T>(const ConstantBuffer<T>& rhs)
+	{
+		this->buffer = rhs.buffer;
+		this->context = rhs.context;
+		this->data = rhs.data;
+	}
 	ConstantBuffer() = default;
 	T data;
 
@@ -40,21 +45,29 @@ public:
 		return true;
 	}
 
-	HRESULT Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) {
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) {
 		this->context = deviceContext;
 
-		D3D11_BUFFER_DESC bufferDesc;
-		ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+		try {
+			D3D11_BUFFER_DESC bufferDesc;
+			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 
-		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDesc.ByteWidth = static_cast<UINT>(sizeof(CB_VS_vertexshader) + (16 - sizeof(CB_VS_vertexshader) % 16));
-		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		bufferDesc.MiscFlags = 0;
-		bufferDesc.StructureByteStride = 0;
+			bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+			bufferDesc.ByteWidth = static_cast<UINT>(sizeof(CB_VS_vertexshader) + (16 - sizeof(CB_VS_vertexshader) % 16));
+			bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+			bufferDesc.MiscFlags = 0;
+			bufferDesc.StructureByteStride = 0;
 
-		HRESULT hr = device->CreateBuffer(&bufferDesc, 0, this->buffer.GetAddressOf());
+			HRESULT hr = device->CreateBuffer(&bufferDesc, 0, this->buffer.GetAddressOf());
+			COM_ERROR_IF_FAILED(hr, "Failed to init Constantbuffer");
+		}
+		catch (COMException& exception)
+		{
+			Logger::Log(exception);
+			return false;
+		}
 
-		return hr;
+		return true;
 	}
 };

@@ -28,7 +28,8 @@ PS_OUTPUT main(PS_INPUT input) : SV_Target
 {
     PS_OUTPUT output;
 
-    float4 color = float4(1.0f, 0.0f, 0.0f, 0.0f);
+    float4 color = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    
     if (hasAlbedoMap)
     {
         color = objTexture.Sample(objSamplerState, input.texCoord);

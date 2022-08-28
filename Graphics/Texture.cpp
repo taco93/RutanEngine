@@ -27,8 +27,6 @@ Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, const std::
 		if (FAILED(hr)) {
 			this->Initialize1x1ColorTexture(device, MyEngine::Colors::UnloadedTextureColor, type);
 		}
-
-		return;
 	}
 	else if (StringHelper::GetFileExtension(filepath) == "tga")
 	{
@@ -55,19 +53,18 @@ Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, const std::
 			Logger::Log(exception);
 
 			this->Initialize1x1ColorTexture(device, MyEngine::Colors::UnloadedTextureColor, type);
-			return;
 		}
+	}
+	else 
+	{
+		HRESULT hr = DirectX::CreateWICTextureFromFile(device, context, StringHelper::StringToWide(filepath).c_str(), texture.GetAddressOf(), this->textureView.GetAddressOf());
 
-		ResourceManager::AddResource(filepath, *this);
-
-		return;
+		if (FAILED(hr)) {
+			this->Initialize1x1ColorTexture(device, MyEngine::Colors::UnloadedTextureColor, type);
+		}
 	}
 
-	HRESULT hr = DirectX::CreateWICTextureFromFile(device, context, StringHelper::StringToWide(filepath).c_str(), texture.GetAddressOf(), this->textureView.GetAddressOf());
-
-	if (FAILED(hr)) {
-		this->Initialize1x1ColorTexture(device, MyEngine::Colors::UnloadedTextureColor, type);
-	}
+	ResourceManager::AddResource(StringHelper::GetFileName(filepath), *this);
 
 	return;
 }

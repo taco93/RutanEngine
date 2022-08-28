@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Graphics\\LightManager.h"
 
 bool Engine::Initialize(HINSTANCE hInstance, uint16_t width, uint16_t height, std::string title, std::string class_)
 {
@@ -21,7 +22,7 @@ bool Engine::ProcessMessages()
 
 void Engine::Update()
 {
-	float dt = timer.GetElapsedTime();
+	float dt = static_cast<float>(timer.GetElapsedTime());
 	timer.Restart();
 
 	while (!keyboard.CharBufferIsEmpty())
@@ -69,11 +70,9 @@ void Engine::Update()
 	if (keyboard.KeyIsPressed('C')) {
 		Vector3 lightPosition = this->gfx.camera.GetPosition();
 		lightPosition += this->gfx.camera.GetForward() * 4.f;
-		this->gfx.light.SetPosition(lightPosition);
-		Vector3 angles = this->gfx.camera.GetRotationAngles();
-		angles.x += XM_PI;
-		this->gfx.light.SetRotation(angles);
+		LightManager::GetLight(0)->position = lightPosition;
 	}
+
 	if (keyboard.KeyIsPressed(VK_ESCAPE)) {
 		this->isRunning = false;
 	}

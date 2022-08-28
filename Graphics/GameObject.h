@@ -2,7 +2,6 @@
 #include "Model.h"
 #include "..//Utility.h"
 #include <SimpleMath.h>
-#include <comdef.h>
 
 using namespace DirectX::SimpleMath;
 

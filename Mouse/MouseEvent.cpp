@@ -7,7 +7,7 @@ MouseEvent::MouseEvent()
 }
 
 MouseEvent::MouseEvent(const EventType type, const int x, const int y)
-	:type(type), pos(x, y)
+	:type(type), pos((float)x, (float)y)
 {
 }
 

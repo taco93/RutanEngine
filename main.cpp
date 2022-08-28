@@ -6,6 +6,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow){
 	HRESULT hr = CoInitialize(NULL);
+	srand(time(NULL));
 
 	if (FAILED(hr)) {
 		Logger::LogError(hr, "Failed to call CoInitialize.");
@@ -14,7 +15,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	Engine engine;
 
-	if (engine.Initialize(hInstance, 1280, 720, "Title", "MyWindowClass")) {
+	if (engine.Initialize(hInstance, 1280, 720, "Rutan Engine", "MyWindowClass")) {
 		while (engine.ProcessMessages() && engine.IsRunning()) {
 			engine.Update();
 			engine.Render();

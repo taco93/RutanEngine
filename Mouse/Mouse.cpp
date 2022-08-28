@@ -56,8 +56,8 @@ void Mouse::OnWheelDown(int x, int y)
 
 void Mouse::OnMouseMove(int x, int y)
 {
-	this->pos.x = x;
-	this->pos.y = y;
+	this->pos.x = static_cast<float>(x);
+	this->pos.y = static_cast<float>(y);
 
 	MouseEvent me(MouseEvent::EventType::Move, this->pos);
 	eventBuffer.push(me);

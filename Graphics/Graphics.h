@@ -11,7 +11,6 @@
 #include "ImGui\\imgui_impl_win32.h"
 #include "ImGui\\imgui_impl_dx11.h"
 #include "RenderableGameObject.h"
-#include "Light.h"
 #include "GeometryPass.h"
 #include "LightingPass.h"
 
@@ -25,7 +24,6 @@ public:
 
 	Camera camera;
 	RenderableGameObject gameObject;
-	Light light;
 	~Graphics();
 
 private:
@@ -37,10 +35,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
-
-	PixelShader pShader_nolight;
-	
-	ConstantBuffer<CB_PS_light> cb_ps_light;
 
 	GeometryPass geometryPass;
 	LightingPass lightingPass;
