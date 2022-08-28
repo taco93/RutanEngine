@@ -204,3 +204,5 @@ $RECYCLE.BIN/
 .vs/DX11Demo/v17/Browse.VC.db
 .vs/DX11Demo/v17/Browse.VC.db-wal
 *.db
+*.db-shm
+*.db
