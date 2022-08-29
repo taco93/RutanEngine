@@ -15,4 +15,5 @@ public:
 private:
 	Timer timer;
 	bool isRunning;
+	recs::recs_registry registry;
 };
